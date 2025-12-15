@@ -1,5 +1,5 @@
 
-Codex Storage Proofs for the MVP
+Logos Storage Proofs for the MVP
 ================================
 
 This document describes the storage proof system for the Codex 2023 Q4 MVP.

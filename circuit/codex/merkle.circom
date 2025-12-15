@@ -24,7 +24,7 @@ include "misc.circom";
 //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Merkle tree convention: Here we use a Codex-specific "safe" Merkle tree convention.
+// Merkle tree convention: Here we use a Logos-Storage-specific "safe" Merkle tree convention.
 //
 // This uses a "keyed compression function", where the key depends on:
 // 
