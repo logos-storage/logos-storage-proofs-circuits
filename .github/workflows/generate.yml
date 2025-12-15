@@ -40,7 +40,7 @@ on:
 
       ceremonyContribution:
         description: 'Input into the circuit ceremony setup'
-        default: 'Let the Codex rock!'
+        default: 'Let the Logos Storage rock!'
 
 env:
   nim_version: 1.6.14
