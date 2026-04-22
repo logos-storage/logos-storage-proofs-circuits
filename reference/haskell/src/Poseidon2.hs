@@ -3,6 +3,7 @@
 
 module Poseidon2 
   ( Fr
+  , Flavour(..)
   , sponge1 , sponge2
   , calcMerkleRoot , calcMerkleTree
   , MerkleTree(..) , depthOf , merkleRootOf , treeBottomLayer 

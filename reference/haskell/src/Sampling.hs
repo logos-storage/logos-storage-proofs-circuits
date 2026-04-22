@@ -30,7 +30,7 @@ type Entropy = Fr
 -- cell index to sample
 sampleCellIndex :: SlotConfig -> Entropy -> Hash -> Int -> CellIdx
 sampleCellIndex cfg entropy slotRoot counter = CellIdx (fromInteger idx) where
-  u   = sponge2 [entropy , slotRoot , fromIntegral counter] :: Fr
+  u   = sponge2 (Slot._hashFlavour cfg) [entropy , slotRoot , fromIntegral counter] :: Fr
   idx = (Fr.from u) `mod` n          :: Integer
   n   = (fromIntegral $ Slot._nCells cfg) :: Integer
  
@@ -62,12 +62,13 @@ data CircuitInput = MkInput
 calculateCircuitInput :: DataSetCfg -> SlotIdx -> Entropy -> IO CircuitInput
 calculateCircuitInput dataSetCfg slotIdx@(SlotIdx sidx) entropy = do
   let nslots = _nSlots dataSetCfg
+  let flavour = DataSet._hashFlavour dataSetCfg
 
   let slotCfgs = [ dataSetSlotCfg dataSetCfg (SlotIdx i) | i <- [0..nslots-1] ]
   slotTrees <- mapM calcSlotTree slotCfgs 
   let !slotRoots = map slotTreeRoot slotTrees
-  let !dsetTree  = calcMerkleTree slotRoots
-  let !dsetRoot  = merkleRootOf dsetTree 
+  let !dsetTree  = calcMerkleTree flavour slotRoots
+  let !dsetRoot  = merkleRootOf   dsetTree 
 
   let ourSlotCfg  = slotCfgs  !! sidx
   let ourSlotRoot = slotRoots !! sidx

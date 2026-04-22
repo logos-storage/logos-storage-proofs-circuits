@@ -1,7 +1,7 @@
 
 -- | BN256 prime, and t = 3
 
-module Poseidon2.RoundConsts where
+module Poseidon2.RoundConstsOld where
 
 --------------------------------------------------------------------------------
 

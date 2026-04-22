@@ -3,6 +3,7 @@ module Main where
 
 --------------------------------------------------------------------------------
 
+import Poseidon2 ( Flavour(..) )
 import Slot ( SlotIdx(..) , DataSource(..) , Seed(..) )
 import DataSet
 import Sampling 
@@ -19,6 +20,7 @@ smallDataSetCfg = MkDataSetCfg
   , _nCells    = 256  -- 64
   , _nSamples  = 10
   , _dataSrc   = FakeData (Seed 12345)
+  , _hashFlavour = HorizenLabsOld
   }
 
 bigDataSetCfg :: DataSetCfg
@@ -31,6 +33,7 @@ bigDataSetCfg = MkDataSetCfg
   , _nCells    = 512
   , _nSamples  = 5
   , _dataSrc   = FakeData (Seed 666)
+  , _hashFlavour = HorizenLabsOld
   }
 
 --------------------------------------------------------------------------------

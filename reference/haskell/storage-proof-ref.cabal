@@ -41,7 +41,8 @@ Library
                        Poseidon2.Example
                        Poseidon2.Merkle
                        Poseidon2.Permutation
-                       Poseidon2.RoundConsts
+                       Poseidon2.RoundConstsOld
+                       Poseidon2.RoundConstsNew
                        Poseidon2.Sponge
                        Misc
                        TestVectors

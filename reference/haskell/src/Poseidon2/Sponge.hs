@@ -1,5 +1,11 @@
 
-module Poseidon2.Sponge where
+{-# LANGUAGE BangPatterns #-}
+module Poseidon2.Sponge 
+  ( Flavour(..)
+  , sponge1
+  , sponge2
+  ) 
+  where
 
 --------------------------------------------------------------------------------
 
@@ -10,8 +16,8 @@ import Poseidon2.Permutation
 --------------------------------------------------------------------------------
 
 -- | Sponge construction with rate=1 (capacity=2), zero IV and 10* padding
-sponge1 :: [Fr] -> Fr
-sponge1 input = go (0,0,civ) (pad input) where
+sponge1 :: Flavour -> [Fr] -> Fr
+sponge1 !flavour input = go (0,0,civ) (pad input) where
 
   -- domain separation: capacity IV = 2^64 + 256*t + rate
   civ = fromInteger (2^64 + 0x0301)
@@ -22,13 +28,13 @@ sponge1 input = go (0,0,civ) (pad input) where
 
   go (sx,_ ,_ ) []     = sx
   go (sx,sy,sz) (a:as) = go state' as where 
-    state' = permutation (sx+a, sy, sz)
+    state' = permutation flavour (sx+a, sy, sz)
 
 --------------------------------------------------------------------------------
 
 -- | Sponge construction with rate=2 (capacity=1), zero IV and 10* padding
-sponge2 :: [Fr] -> Fr
-sponge2 input = go (0,0,civ) (pad input) where
+sponge2 :: Flavour -> [Fr] -> Fr
+sponge2 !flavour input = go (0,0,civ) (pad input) where
 
   -- domain separation: capacity IV = 2^64 + 256*t + rate
   civ = fromInteger (2^64 + 0x0302)
@@ -40,7 +46,7 @@ sponge2 input = go (0,0,civ) (pad input) where
 
   go (sx,_ ,_ ) []         = sx
   go (sx,sy,sz) (a:b:rest) = go state' rest where 
-    state' = permutation (sx+a, sy+b, sz)
+    state' = permutation flavour (sx+a, sy+b, sz)
 
 --------------------------------------------------------------------------------
 

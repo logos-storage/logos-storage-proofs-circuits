@@ -49,11 +49,12 @@ data DataSource
   deriving Show
 
 data SlotConfig = MkSlotCfg
-  { _cellSize  :: Int           -- ^ cell size in bytes (eg. 2048)
-  , _blockSize :: Int           -- ^ block size in bytes (eg. 65536)
-  , _nCells    :: Int           -- ^ number of cells per slot (should be power of two)
-  , _nSamples  :: Int           -- ^ how many cells we sample
-  , _dataSrc   :: DataSource    -- ^ slot data source
+  { _cellSize    :: Int           -- ^ cell size in bytes (eg. 2048)
+  , _blockSize   :: Int           -- ^ block size in bytes (eg. 65536)
+  , _nCells      :: Int           -- ^ number of cells per slot (should be power of two)
+  , _nSamples    :: Int           -- ^ how many cells we sample
+  , _hashFlavour :: Flavour       -- ^ which hash function instance to use
+  , _dataSrc     :: DataSource    -- ^ slot data source
   }
   deriving Show
 
@@ -71,11 +72,12 @@ blocksPerSlot cfg = case divMod (_nCells cfg) (cellsPerBlock cfg) of
 -- | Example slot configuration
 exSlotCfg :: SlotConfig
 exSlotCfg = MkSlotCfg
-  { _cellSize  = 256
-  , _blockSize = 4096
-  , _nCells    = 1024
-  , _nSamples  = 20
-  , _dataSrc   = FakeData (Seed 12345)
+  { _cellSize    = 256
+  , _blockSize   = 4096
+  , _nCells      = 1024
+  , _nSamples    = 20
+  , _hashFlavour = HorizenLabsOld
+  , _dataSrc     = FakeData (Seed 12345)
   }
 
 fieldElemsPerCell :: SlotConfig -> Int
@@ -153,7 +155,7 @@ calcBlockTree cfg idx = do
   block <- loadBlockData cfg idx
   let cells = splitBlockToCells cfg block
   let cellHashes = map (hashCell cfg) cells
-  let tree = calcMerkleTree cellHashes
+  let tree = calcMerkleTree (_hashFlavour cfg) cellHashes
   return tree
 
 calcAllBlockTrees :: SlotConfig -> IO (Array Int MerkleTree)
@@ -175,7 +177,7 @@ slotTreeRoot = merkleRootOf . _bigTree
 calcSlotTree :: SlotConfig -> IO SlotTree
 calcSlotTree cfg = do
   minitrees <- calcAllBlockTrees cfg
-  let bigtree = calcMerkleTree $ map merkleRootOf $ elems minitrees
+  let bigtree = calcMerkleTree (_hashFlavour cfg) $ map merkleRootOf $ elems minitrees
   return $ MkSlotTree minitrees bigtree
 
 extractCellProof :: SlotConfig -> SlotTree -> CellIdx -> [Hash]
@@ -201,13 +203,15 @@ checkCellProof cfg slotTree (CellIdx cellIdx) cellHash path
     inBlockCellIdx = cellIdx .&. (k-1)
 
     smallProof = MkMerkleProof
-      { _leafIndex   = inBlockCellIdx
+      { _flavour     = _hashFlavour cfg
+      , _leafIndex   = inBlockCellIdx
       , _leafData    = cellHash
       , _merklePath  = take logK path
       , _dataSize    = k
       }
     bigProof = MkMerkleProof
-      { _leafIndex   = blockIdx
+      { _flavour     = _hashFlavour cfg
+      , _leafIndex   = blockIdx
       , _leafData    = blockHash
       , _merklePath  = drop logK path
       , _dataSize    = m
@@ -222,10 +226,12 @@ checkCellProof cfg slotTree (CellIdx cellIdx) cellHash path
 hashCell :: SlotConfig -> CellData -> Hash
 hashCell cfg (CellData rawdata) 
   | B.length rawdata /= _cellSize cfg  = error "hashCell: invalid cell data size"
-  | otherwise                          = hashCell_ rawdata
+  | otherwise                          = hashCell_ flavour rawdata
+  where
+    flavour = _hashFlavour cfg
 
-hashCell_ :: ByteString -> Hash
-hashCell_ rawdata = sponge2 (cellDataToFieldElements $ CellData rawdata) 
+hashCell_ :: Flavour -> ByteString -> Hash
+hashCell_ flavour rawdata = sponge2 flavour (cellDataToFieldElements $ CellData rawdata) 
 
 --------------------------------------------------------------------------------
 

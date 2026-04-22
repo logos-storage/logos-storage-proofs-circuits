@@ -18,60 +18,70 @@ import ZK.Algebra.Curves.BN128.Fr.Mont (Fr)
 
 --------------------------------------------------------------------------------
 
+allTestVectors :: IO ()
 allTestVectors = do
-  testVectorsSponge 
-  testVectorsHash
-  testVectorsMerkle
+  putStrLn "\nTEST VECTORS FOR *OLD* ROUND CONSTANTS"
+  putStrLn "======================================"
+  allTestVectors' HorizenLabsOld
+  putStrLn "\nTEST VECTORS FOR *NEW* ROUND CONSTANTS"
+  putStrLn "======================================"
+  allTestVectors' HorizenLabsNew
+
+allTestVectors' :: Flavour -> IO ()
+allTestVectors' flavour = do
+  testVectorsSponge flavour 
+  testVectorsHash   flavour
+  testVectorsMerkle flavour
 
 --------------------------------------------------------------------------------
 
-testVectorsSponge :: IO ()
-testVectorsSponge = do
+testVectorsSponge :: Flavour -> IO ()
+testVectorsSponge flavour = do
   putStrLn ""
-  putStrLn "test vectors for sponge of field elements with rate=1"
-  putStrLn "-----------------------------------------------------"
+  putStrLn $ "test vectors for sponge of field elements with rate=1 | " ++ show flavour
+  putStrLn "-------------------------------------------------------------------"
   forM_ [0..8] $ \n -> do
     let input = map fromIntegral [1..n] :: [Fr]
-    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Fr] =  " ++ show (sponge1 input)
+    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Fr] =  " ++ show (sponge1 flavour input)
 
   putStrLn ""
-  putStrLn "test vectors for sponge of field elements with rate=2"
-  putStrLn "-----------------------------------------------------"
+  putStrLn $ "test vectors for sponge of field elements with rate=2 | " ++ show flavour
+  putStrLn "-------------------------------------------------------------------"
   forM_ [0..8] $ \n -> do
     let input = map fromIntegral [1..n] :: [Fr]
-    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Fr] =  " ++ show (sponge2 input)
+    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Fr] =  " ++ show (sponge2 flavour input)
 
 --------------------------------------------------------------------------------
 
-testVectorsHash :: IO ()
-testVectorsHash = do
+testVectorsHash :: Flavour -> IO ()
+testVectorsHash flavour = do
 
   putStrLn ""
-  putStrLn "test vectors for hash (padded sponge with rate=2) of bytes"
+  putStrLn $ "test vectors for hash (padded sponge with rate=2) of bytes | " ++ show flavour
   putStrLn "----------------------------------------------------------"
   forM_ [0..80] $ \n -> do
     let input = map fromIntegral [1..n] :: [Word8]
     let bs    = B.pack input
-    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Byte] =  " ++ show (hashCell_ bs)
+    putStrLn $ "hash of [1.." ++ show n ++ "] :: [Byte] =  " ++ show (hashCell_ flavour bs)
 
 --------------------------------------------------------------------------------
 
-testVectorsMerkle :: IO ()
-testVectorsMerkle = do
+testVectorsMerkle :: Flavour -> IO ()
+testVectorsMerkle flavour = do
   putStrLn ""
-  putStrLn "test vectors for Merkle roots of field elements"
+  putStrLn $ "test vectors for Merkle roots of field elements | " ++ show flavour
   putStrLn "-----------------------------------------------"
   forM_ [1..40] $ \n -> do
     let input = map fromIntegral [1..n] :: [Fr]
-    putStrLn $ "Merkle root of [1.." ++ show n ++ "] :: [Fr]  =  " ++ show (calcMerkleRoot input)
+    putStrLn $ "Merkle root of [1.." ++ show n ++ "] :: [Fr]  =  " ++ show (calcMerkleRoot flavour input)
 
   putStrLn ""
-  putStrLn "test vectors for Merkle roots of sequence of bytes"
+  putStrLn $ "test vectors for Merkle roots of sequence of bytes | " ++ show flavour
   putStrLn "--------------------------------------------------"
   forM_ [0..80] $ \n -> do
     let input = map fromIntegral [1..n] :: [Word8]
     let bs    = B.pack input
     let flds  = cellDataToFieldElements (CellData bs)
-    putStrLn $ "Merkle root of [1.." ++ show n ++ "] :: [Byte]  =  " ++ show (calcMerkleRoot flds)
+    putStrLn $ "Merkle root of [1.." ++ show n ++ "] :: [Byte]  =  " ++ show (calcMerkleRoot flavour flds)
 
 --------------------------------------------------------------------------------
