@@ -130,7 +130,21 @@ elements, not bytes!), and an initialization vector `(0,0,domSep)` where `domSep
 (short for "domain separation"), the initial value for the "capacity" part of the 
 sponge, is defined as 
 
-    domSep := 2^64 + 256*t + rate
+    domSep (old) := 2^64 + 256*t + rate
+    domSep (new) := 2^64 + 2^24*padding + 2^16*inputType + 2^8*t + rate
+
+Here `inputType` can be:
+
+- 1: input is a sequence of bits
+- 8: input is a sequence of bytes
+- 254: input is a sequence of BN254 field elements
+
+And `padding` (the padding strategy can be):
+
+- 1: the `10*` padding strategy, applied to a sequence of field elements
+- 16: the `10*` padding strategy, applied to a sequence of bytes (or bits)
+- 17: the `10*` padding strategy applied first to bytes (to a multiple of 31 bytes), then also to the resulting field element sequence
+- 255: no padding
 
 
 Parameters
@@ -263,6 +277,7 @@ In case of SHA256, we could use a compression functions of the form
 `SHA256(x|y|key)`, where `x,y` are 32 byte long hashes, and `key` is a single
 byte. Since SHA256 already does some padding internally, this has the same
 cost as computing just `SHA256(x|y)`.
+
 
 Network blocks vs. cells
 ------------------------

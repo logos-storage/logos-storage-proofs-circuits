@@ -18,11 +18,14 @@ module Poseidon2.Merkle where
 import Data.Array
 import Data.Bits
 
+import Data.ByteString (ByteString)
+
 import Control.Monad
 
 import ZK.Algebra.Curves.BN128.Fr.Mont (Fr)
 
 import Poseidon2.Permutation
+import Poseidon2.Sponge
 
 -- import Debug.Trace
 -- debug s x y = trace (s ++ " ~> " ++ show x) y
@@ -66,6 +69,7 @@ calcMerkleTree' = go where
   go xs  = xs : go (map compressPair $ pairs xs)
 -}
 
+
 calcMerkleTree' :: Flavour -> [Fr] -> [[Fr]]
 calcMerkleTree' flavour input = 
   case input of
@@ -78,9 +82,17 @@ calcMerkleTree' flavour input =
     go (f:fs) xs = xs : go fs (map (evenOddCompressPair flavour f) $ eiPairs xs)
 
 calcMerkleTree :: Flavour -> [Fr] -> MerkleTree
-calcMerkleTree flavour = MkMerkleTree flavour . go1 . calcMerkleTree' flavour where
+calcMerkleTree flavour leaves = MkMerkleTree flavour $ go1 (calcMerkleTree' flavour leaves) where
   go1 outer = listArray (0, length outer-1) (map go2 outer)
   go2 inner = listArray (0, length inner-1) inner
+
+--------------------------------------------------------------------------------
+
+calcMerkleTreeFeltSeqs :: Flavour -> [[Fr]] -> MerkleTree
+calcMerkleTreeFeltSeqs flavour xss = calcMerkleTree flavour (map (spongeFelts SpongeRate2 flavour) xss)
+
+calcMerkleTreeByteStrings :: Flavour -> [ByteString] -> MerkleTree
+calcMerkleTreeByteStrings flavour bss = calcMerkleTree flavour (map (spongeBytes SpongeRate2 flavour) bss)
 
 --------------------------------------------------------------------------------
 

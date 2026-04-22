@@ -16,6 +16,7 @@ import Control.Monad
 import System.IO
 
 import Poseidon2
+import Poseidon2.Sponge
 import Misc
 
 --------------------------------------------------------------------------------
@@ -231,48 +232,11 @@ hashCell cfg (CellData rawdata)
     flavour = _hashFlavour cfg
 
 hashCell_ :: Flavour -> ByteString -> Hash
-hashCell_ flavour rawdata = sponge2 flavour (cellDataToFieldElements $ CellData rawdata) 
+hashCell_ flavour rawdata = spongeBytes SpongeRate2 flavour rawdata  
+-- sponge2 flavour (cellDataToFieldElements $ CellData rawdata) 
 
 --------------------------------------------------------------------------------
-
--- | A 31-byte long chunk
-newtype Chunk 
-  = Chunk ByteString 
-  deriving Show
-
--- | Split bytestring into samller pieces, applying the @10*@ padding strategy.
---
--- That is, always add a single @0x01@ byte, and then add the necessary
--- number (in the interval @[0..k-1]@) of @0x00@ bytes to be a multiple of the 
--- given chunk length
---
-padAndSplitByteString :: Int -> ByteString -> [Chunk]
-padAndSplitByteString k orig = go (B.snoc orig 0x01) where
-  go bs 
-    | m == 0      = []
-    | m < k       = [Chunk $ B.append bs (B.replicate (k-m) 0x00)]
-    | otherwise   = (Chunk $ B.take k bs) : go (B.drop k bs)
-    where
-      m = B.length bs
 
 -- | Chunk a ByteString into a sequence of field elements
 cellDataToFieldElements :: CellData -> [Fr]
-cellDataToFieldElements (CellData rawdata) = map chunkToField pieces where
-  chunkSize = 31
-  pieces = padAndSplitByteString chunkSize rawdata
-
-chunkToField :: Chunk -> Fr
-chunkToField chunk@(Chunk bs)
-  | l == 31  = fromInteger (chunkToIntegerLE chunk)
-  | l <  31  = error "chunkToField: chunk is too small (expecting exactly 31 bytes)"
-  | l >  31  = error "chunkToField: chunk is too big (expecting exactly 31 bytes)"
-  where 
-    l = B.length bs
-
--- | Interpret a ByteString as an integer (little-endian)
-chunkToIntegerLE :: Chunk -> Integer
-chunkToIntegerLE (Chunk chunk) = go (B.unpack chunk) where
-  go []     = 0
-  go (w:ws) = fromIntegral w + shiftL (go ws) 8
-
---------------------------------------------------------------------------------
+cellDataToFieldElements (CellData rawdata) = byteStringToFieldElements rawdata

@@ -12,6 +12,7 @@ import qualified Data.ByteString as B
 import Slot    as Slot
 import DataSet as DataSet
 import Poseidon2
+import Poseidon2.Sponge
 
 import qualified ZK.Algebra.Curves.BN128.Fr.Mont as Fr
 
@@ -30,7 +31,7 @@ type Entropy = Fr
 -- cell index to sample
 sampleCellIndex :: SlotConfig -> Entropy -> Hash -> Int -> CellIdx
 sampleCellIndex cfg entropy slotRoot counter = CellIdx (fromInteger idx) where
-  u   = sponge2 (Slot._hashFlavour cfg) [entropy , slotRoot , fromIntegral counter] :: Fr
+  u   = spongeFelts2 (Slot._hashFlavour cfg) [entropy , slotRoot , fromIntegral counter] :: Fr
   idx = (Fr.from u) `mod` n          :: Integer
   n   = (fromIntegral $ Slot._nCells cfg) :: Integer
  

@@ -4,8 +4,9 @@
 module Poseidon2 
   ( Fr
   , Flavour(..)
-  , sponge1 , sponge2
+  , spongeFelts , spongeBytes
   , calcMerkleRoot , calcMerkleTree
+  , calcMerkleTreeFeltSeqs , calcMerkleTreeByteStrings
   , MerkleTree(..) , depthOf , merkleRootOf , treeBottomLayer 
   , MerkleProof(..) , extractMerkleProof , extractMerkleProof_ , reconstructMerkleRoot
   , compressPair, keyedCompressPair
