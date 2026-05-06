@@ -72,16 +72,13 @@ Build the Nim cli proof input generator:
 
 ### Powers of tau setup
 
-Either download a ready-to-use "powers of tau" setup file (section 7), or generate one
-youself using `snarkjs` (sections 1..7), see the README here: <https://github.com/iden3/snarkjs>
+To fetch the ptau file, you have next few options:
 
-Size `2^21` (file size about 2GB) should be big enough:
+1. Run the `ptau.sh` script inside the `workflow` folder. (You can modify the power of ptau inside `./params.sh` file on `PTAU_POWER` variable)
 
-    $ cd ..
-    $ mkdir -p ceremony
-    $ cd ceremony
-    $ wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_21.ptau
-    $ cd ../workflow
+2. Manually download a ready-to-use "powers of tau" setup file (section 7), or generate one
+   youself using `snarkjs` (sections 1..7), see the README here: <https://github.com/iden3/snarkjs>
+   Size `2^21` (file size about 2GB) should be big enough:
 
 Note: generating this yourself will probably take quite a long time.
 
